@@ -17,6 +17,7 @@ extern "C" {
 }
 #include <cstdlib>
 #include <map>
+#include <queue>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -30,12 +31,12 @@ extern "C" {
 #define BURST_SIZE 32
 #define MAX_QUEUE_NUM 1
 
-static const struct rte_eth_conf port_conf_default = {
-    .rxmode =
-        {
-            .max_rx_pkt_len = ETHER_MAX_LEN,
-        },
-};
+// static const struct rte_eth_conf port_conf_default = {
+//     .rxmode =
+//         {
+//             .max_rx_pkt_len = ETHER_MAX_LEN,
+//         },
+// };
 
 class dpdk_driver {
 public:
@@ -51,6 +52,7 @@ public:
 
 private:
   struct rte_mempool *mbuf_pool;
+  std::queue<rte_mbuf *> recv_queue;
 };
 
 unsigned inject_msg_type(char *msg, unsigned msg_type);

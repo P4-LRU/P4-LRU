@@ -32,7 +32,7 @@ namespace APP1
     
 
     double DeltaT = 2e-5;
-    const int K = 3;
+    int K = 3;
     int NBUCKET = 100000;
 
     int n_items, n_miss;
@@ -71,6 +71,31 @@ namespace APP1
 
     void init(int TOTAL_BUCKET)
     {
+        NBUCKET = TOTAL_BUCKET / K;
+        seed = clock();
+        sleep(1);
+        fp_seed = clock();
+        n_items = 0;
+        n_miss = 0;
+        perc =  0;
+        n_vic = 0;
+        n_hit = 0;
+        n_pholder = 0;
+
+        if (!nt)
+            delete[] nt;
+            
+        nt = new std::deque<slot_t>[NBUCKET];
+        pending_queue = std::queue<pending_item>();
+        ts_order.clear();
+        dup_cntr.clear();
+        LOG_INFO("#Buckets: %d, dT: %lf", K*NBUCKET, DeltaT);
+    }
+
+    void init(int TOTAL_BUCKET, int k, double delta)
+    {
+        DeltaT = delta;
+        K = k;
         NBUCKET = TOTAL_BUCKET / K;
         seed = clock();
         sleep(1);

@@ -1,15 +1,13 @@
 CC=g++
-CFLAGS=-std=c++11 -c -O3 -Wall -fgnu-tm
-LIBRARYS=-Wl,--whole-archive -ldpdk -Wl,--no-whole-archive -mssse3 -lmlx4 -libverbs -lpthread -ldl -lm -lnuma
-INCLUDES=-I../ -I/usr/local/include/dpdk
+CFLAGS=$(shell pkg-config --cflags libdpdk librdmacm libibverbs) -O3 -g -fpermissive
+LIBRARYS=$(shell pkg-config --libs libdpdk librdmacm libibverbs)
 SOURCES=$(wildcard *.cc)
 OBJECTS=$(SOURCES:.cc=.o)
 
 all: $(SOURCES) $(OBJECTS)
 
 .cc.o:
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBRARYS) $< -o $@
+	$(CC) $(CFLAGS) $< -c -o $@ $(LIBRARYS)
 
 clean:
 	$(RM) $(OBJECTS)
-

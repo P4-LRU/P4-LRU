@@ -50,6 +50,7 @@ namespace APP2IDEAL
     void init(double dT)
     {
         DeltaT = dT;
+        NBUCKET = 300000;
         sleep(1);
         fp_seed = clock();
         n_items = 0;
@@ -64,6 +65,22 @@ namespace APP2IDEAL
     void init(int TOTAL_BUCKET)
     {
         NBUCKET = TOTAL_BUCKET;
+        DeltaT = 2e-5;
+        sleep(1);
+        fp_seed = clock();
+        n_items = 0;
+        n_miss = 0;
+
+        timer.clear();
+        nt.clear();
+        pending_queue = std::queue<pending_item>();
+        LOG_INFO("#Buckets: %d, dT: %lf", NBUCKET, DeltaT);
+    }
+
+    void init(int TOTAL_BUCKET, double delta)
+    {
+        NBUCKET = TOTAL_BUCKET;
+        DeltaT = delta;
         sleep(1);
         fp_seed = clock();
         n_items = 0;
@@ -118,7 +135,7 @@ namespace APP2IDEAL
 
     void result()
     {
-        LOG_RESULT("[APP #2] Miss Rate: %lf", double(n_miss)/n_items);
+        LOG_RESULT("[APP IDEAL #2] Miss Rate: %lf", double(n_miss)/n_items);
     }
 
 } // namespace APP1IDEAL

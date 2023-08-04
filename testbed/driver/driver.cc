@@ -5,7 +5,7 @@ using namespace std;
 
 int dpdk_driver::port_init(uint16_t port, uint16_t rx_rings,
                            uint16_t tx_rings) {
-  struct rte_eth_conf port_conf = port_conf_default;
+  struct rte_eth_conf port_conf;
   uint16_t nb_rxd = RX_RING_SIZE;
   uint16_t nb_txd = TX_RING_SIZE;
   int retval;
@@ -16,6 +16,7 @@ int dpdk_driver::port_init(uint16_t port, uint16_t rx_rings,
   if (!rte_eth_dev_is_valid_port(port))
     return -1;
 
+  memset(&port_conf, 0, sizeof(struct rte_eth_conf));
   rte_eth_dev_info_get(port, &dev_info);
 
   if (dev_info.tx_offload_capa & DEV_TX_OFFLOAD_MBUF_FAST_FREE)
@@ -51,7 +52,7 @@ int dpdk_driver::port_init(uint16_t port, uint16_t rx_rings,
   if (retval < 0)
     return retval;
 
-  struct ether_addr addr;
+  struct rte_ether_addr addr;
   rte_eth_macaddr_get(port, &addr);
   printf("Port %u MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8 " %02" PRIx8
          " %02" PRIx8 " %02" PRIx8 "\n",
@@ -68,9 +69,9 @@ void dpdk_driver::send_pkt(char *context, unsigned nb_bytes) {
 
   struct rte_mbuf *mbuf;
 
-  struct ether_hdr *hdr_eth;
-  struct ipv4_hdr *hdr_ip;
-  struct udp_hdr *hdr_udp;
+  struct rte_ether_hdr  *hdr_eth;
+  struct rte_ipv4_hdr  *hdr_ip;
+  struct rte_udp_hdr  *hdr_udp;
 
   mbuf = rte_pktmbuf_alloc(mbuf_pool);
 
@@ -81,18 +82,18 @@ void dpdk_driver::send_pkt(char *context, unsigned nb_bytes) {
 
   rte_memcpy(payload, context, nb_bytes);
 
-  hdr_udp = (struct udp_hdr *)rte_pktmbuf_prepend(mbuf, sizeof(struct udp_hdr));
+  hdr_udp = (struct rte_udp_hdr  *)rte_pktmbuf_prepend(mbuf, sizeof(struct rte_udp_hdr ));
   hdr_udp->src_port = htons(0);
   hdr_udp->dst_port = htons(0);
-  hdr_udp->dgram_len = htons(nb_bytes + sizeof(struct udp_hdr));
+  hdr_udp->dgram_len = htons(nb_bytes + sizeof(struct rte_udp_hdr));
   hdr_udp->dgram_cksum = 0;
 
   hdr_ip =
-      (struct ipv4_hdr *)rte_pktmbuf_prepend(mbuf, sizeof(struct ipv4_hdr));
+      (struct rte_ipv4_hdr *)rte_pktmbuf_prepend(mbuf, sizeof(struct rte_ipv4_hdr));
   hdr_ip->version_ihl = 0x45;
   hdr_ip->type_of_service = 0;
   hdr_ip->total_length =
-      htons(nb_bytes + sizeof(struct udp_hdr) + sizeof(struct ipv4_hdr));
+      htons(nb_bytes + sizeof(struct rte_udp_hdr) + sizeof(struct rte_ipv4_hdr));
   hdr_ip->packet_id = 0;
   hdr_ip->fragment_offset = 0;
   hdr_ip->time_to_live = 64;
@@ -102,14 +103,15 @@ void dpdk_driver::send_pkt(char *context, unsigned nb_bytes) {
   hdr_ip->dst_addr = htonl(0);
 
   hdr_eth =
-      (struct ether_hdr *)rte_pktmbuf_prepend(mbuf, sizeof(struct ether_hdr));
-  memset(&hdr_eth->s_addr, 0x0, ETHER_ADDR_LEN);
-  memset(&hdr_eth->d_addr, 0x0, ETHER_ADDR_LEN);
-  hdr_eth->ether_type = htons(ETHER_TYPE_IPv4);
+      (struct rte_ether_hdr  *)rte_pktmbuf_prepend(mbuf, sizeof(struct rte_ether_hdr ));
+  memset(&hdr_eth->s_addr, 0x0, RTE_ETHER_ADDR_LEN);
+  memset(&hdr_eth->d_addr, 0x0, RTE_ETHER_ADDR_LEN);
+  hdr_eth->ether_type = htons(RTE_ETHER_TYPE_IPV4);
 
   hdr_udp->dgram_cksum = rte_ipv4_udptcp_cksum(hdr_ip, hdr_udp);
   hdr_ip->hdr_checksum = rte_ipv4_cksum(hdr_ip);
 
+  // cout << "try to burst" << endl;
   uint16_t nb_tx = rte_eth_tx_burst(port, 0, &mbuf, 1);
 
   if (unlikely(nb_tx < 1)) {
@@ -121,23 +123,34 @@ void dpdk_driver::recv_pkt(char *context, unsigned nb_bytes) {
   uint16_t port = 0;
   unsigned nb_rx_pkt;
 
-  struct rte_mbuf *mbuf;
+  struct rte_mbuf  *mbuf,*mbufs[BURST_SIZE];
 
-  struct ether_hdr *hdr_eth;
-  struct ipv4_hdr *hdr_ip;
-  struct udp_hdr *hdr_udp;
+  struct rte_ether_hdr  *hdr_eth;
+  struct rte_ipv4_hdr  *hdr_ip;
+  struct rte_udp_hdr  *hdr_udp;
 
-  uint16_t nb_rx;
+  if (recv_queue.empty()) {
+    /* Send burst of TX packets, to second port of pair. */
+    uint16_t nb_rx;
 
-  do {
-    nb_rx = rte_eth_rx_burst(port, 0, &mbuf, 1);
-  } while (unlikely(nb_rx < 1));
+    /* Free any unsent packets. */
+    do {
+      nb_rx = rte_eth_rx_burst(port, 0, mbufs, 4);
+    } while (unlikely(nb_rx < 1));
 
-  hdr_eth = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
+    for (int buf = 0; buf < nb_rx; buf++) {
+      recv_queue.push(mbufs[buf]);
+    }
+  }
 
-  hdr_ip = (struct ipv4_hdr *)(hdr_eth + 1);
+  mbuf = recv_queue.front();
+  recv_queue.pop();
 
-  hdr_udp = (struct udp_hdr *)(hdr_ip + 1);
+  hdr_eth = rte_pktmbuf_mtod(mbuf, struct rte_ether_hdr  *);
+
+  hdr_ip = (struct rte_ipv4_hdr  *)(hdr_eth + 1);
+
+  hdr_udp = (struct rte_udp_hdr  *)(hdr_ip + 1);
 
   char *payload = (char *)(hdr_udp + 1);
 

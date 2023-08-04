@@ -31,7 +31,7 @@ namespace APP2
     
 
     double DeltaT = 2e-5;
-    const int K = 3;
+    int K = 3;
     int NSTAGE = 4;
     int LEN = 25000;
 
@@ -95,6 +95,36 @@ namespace APP2
         ts_order.clear();
         dup_cntr.clear();
     }
+
+    void init(int TOTAL_BUCKET, int nstage, int k, double delta)
+    {
+        K = k;
+        NSTAGE = nstage;
+        LEN = TOTAL_BUCKET/(K*NSTAGE);
+        DeltaT = delta;
+        if (!seed)
+            seed = new seed_t[NSTAGE];
+        for (int i=0;i<NSTAGE;i++)
+        {
+            seed[i] = clock();
+            sleep(1);
+        }
+        fp_seed = clock();
+        n_items = 0;
+        n_miss = 0;
+        perc = 0;
+        n_vic = 0;
+
+        nt = new std::deque<slot_t>*[NSTAGE];
+        for (int i=0;i<NSTAGE;i++)
+            nt[i] = new std::deque<slot_t>[LEN];
+
+        pending_queue = std::queue<pending_item>();
+        ts_order.clear();
+        dup_cntr.clear();
+    }
+
+
 
     void insert(data_t item)
     {

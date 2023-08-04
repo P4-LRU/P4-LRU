@@ -13,6 +13,8 @@ namespace APP2
 
     void init(int TOTAL_BUCKET, int nstage = 4);
 
+    void init(int TOTAL_BUCKET, int nstage, int k, double delta);
+
     void insert(data_t item);
 
     void result();

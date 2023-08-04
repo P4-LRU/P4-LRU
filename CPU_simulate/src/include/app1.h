@@ -13,6 +13,7 @@ namespace APP1
 
     void init(int TOTAL_BUCKET);
 
+    void init(int TOTAL_BUCKET, int k, double delta);
     void insert(data_t item);
 
     void result();

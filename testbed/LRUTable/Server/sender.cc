@@ -1,4 +1,4 @@
-#include "../driver/driver.h"
+#include "../../driver/driver.h"
 #include <arpa/inet.h>
 #include <bits/stdc++.h>
 
@@ -79,7 +79,7 @@ vector<packet> vp;
 
 int main(int argc, char *argv[]) {
   driver.init(argc, argv);
-  ifstream caida("../CAIDA/060.dat", ios::binary);
+  ifstream caida("/home/lab1806/CAIDA_BYTE_TSTAMP_2018/normalized_060.dat", ios::binary);
 
   struct sigaction new_sa, old_sa;
 
@@ -89,11 +89,13 @@ int main(int argc, char *argv[]) {
   sigaction(SIGINT, &new_sa, &old_sa);
 
   packet p;
+  int total_num = 0;
   while (caida.read((char *)&p, sizeof(packet))) {
     vp.push_back(p);
+    total_num += 1;
   }
 
-  cout << "dataset read." << endl;
+  cout << "dataset read: "<<total_num << endl;
 
   // while (true) {
   for (int i = 0; i < vp.size(); i++) {

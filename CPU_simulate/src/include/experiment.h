@@ -12,4 +12,10 @@ void test_app2();
 
 void test_app3();
 
+void test_app4();
+
+void test_app5();
+
+void test_app6();
+
 #endif

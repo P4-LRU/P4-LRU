@@ -80,6 +80,23 @@ namespace APP1IDEAL
         LOG_INFO("#Buckets: %d, dT: %lf", NBUCKET, DeltaT);
     }
 
+    void init(int TOTAL_BUCKET, double delta)
+    {
+        NBUCKET = TOTAL_BUCKET;
+        DeltaT = delta;
+        sleep(1);
+        fp_seed = clock();
+        n_items = 0;
+        n_miss = 0;
+        n_hit = 0;
+        n_pholder = 0;
+
+        timer.clear();
+        nt.clear();
+        pending_queue = std::queue<pending_item>();
+        LOG_INFO("#Buckets: %d, dT: %lf", NBUCKET, DeltaT);
+    }
+
     void insert(data_t item)
     {
         while (!pending_queue.empty())
@@ -139,7 +156,7 @@ namespace APP1IDEAL
 
     void result()
     {
-        LOG_RESULT("[APP #1] Hit Rate: %lf, PlaceHolder Hit Rate: %lf, Miss Rate: %lf", 
+        LOG_RESULT("[APP IDEAL #1] Hit Rate: %lf, PlaceHolder Hit Rate: %lf, Miss Rate: %lf", 
             double(n_hit)/n_items, double(n_pholder)/n_items, double(n_miss)/n_items);
     }
 
