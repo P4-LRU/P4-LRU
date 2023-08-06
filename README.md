@@ -1,17 +1,11 @@
 ### Paper P4LRU
 
-We put all of our testbed and simulative code in this repository.
+Our paper is accepted by SIGCOMM'23！
 
-Each system is composed of **P4 code**,  control plane code(empty) and **the server code**.
+you can find the complete paper in [SIGCOMM 23](https://conferences.sigcomm.org/sigcomm/2023).
 
-We implement a LRU version code and a baseline code based on random function of each system. 
+The paper name is ***P4LRU: Towards An LRU Cache Entirely in Programmable Data Plane***. 
 
-**LRUTable** takes up one pipeline of a Tofino switch; **LRUMon** takes up two and **LRUIndex** takes up two or four.
+The authors are: **Yikai Zhao, Wenrui Liu, Fenghao Dong, Tong Yang, Yuanpeng Li, Kaicheng Yang, and Zirui Liu (Peking University); Zhengyi Jia and Yongqiang Yang (Huawei Technologies)**
 
-We compile the P4 code in SDE 9.2.0 successfully, but this process may last for a while.
-
-
-
-``CPU_simulate``: CPU simulate code
-
-``testbed``: P4 code and the server code of three system
+All experience figures in the paper are generated from the code in this repository. You can follow the subdirectory README to reproduce the results.
