@@ -118,7 +118,7 @@ You can follow these steps to begin a test:
 
 ### LRUIndex
 
-code path: `./testbed/LRUMon/Server/`
+code path: `./testbed/LRUIndex/Server/`
 
 The server part of LRUIndex is based on our another database system, which needs some lib supports. You need to install these library first:
 ```shell
@@ -128,7 +128,7 @@ apt install libhiredis-dev
 
 You can follow these steps to begin a test:
 
-+ compile: use `make` in `./testbed/LRUMon/Server/`
++ compile: use `make` in `./testbed/LRUIndex/Server/`
 
 + run the program:
 
