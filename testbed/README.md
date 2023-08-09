@@ -65,13 +65,13 @@ For convenience, we write a DPDK driver for sending and receiving packets with D
 
 
 
-### LRUIndex
+### LRUTable
 
-code path: `./testbed/LRUIndex/Server/`
+code path: `./testbed/LRUTable/Server/`
 
 You can follow these steps to begin a test:
 
-+ compile: use `make` in `./testbed/LRUIndex/Server/`
++ compile: use `make` in `./testbed/LRUTable/Server/`
 
 + run the program:
 
