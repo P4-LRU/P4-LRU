@@ -9,7 +9,8 @@ Each system code contains two parts: server code and P4 code. Compiling the serv
 ## Minimum environment requests
 
 + Two servers with NIC supported DPDK and DPDK version == 20.11(we cannot ensure DPDK code can be compiled in other versions)
-+ a Tofino switch with SDE version >= 9.2 (we tested in 9.2.0 and 9.7.0)
++ a Tofino switch with SDE version == 9.2 
+Notice: We **highly** recommend you to use SDE 9.2. We tested our P4 programs in SDE9.2, 9.5 and 9.7, but *LRUIndex* makes some logic mistakes and leads function errors under SDE 9.5 and 9.7. We guess it is because of the internal compilor error of Tofino SDE.
 
 These two servers link with the Tofino switch. Packets can be transmitted through the switch
 
@@ -42,6 +43,8 @@ ucli
 #config parameters should change with your environment
 port-add -/- 40G NONE
 port-enb -/-
+#for LRUIndex and LRUMon, they use two pipes, so you need to set loopback port for them
+port-loopback ?/- mac-near
 ```
 
 ​	you can use a new shell to run the bfrt setting script(the parameters in the script should change with your environment):
@@ -64,11 +67,11 @@ For convenience, we write a DPDK driver for sending and receiving packets with D
 
 ### LRUIndex
 
-code path: `./testbed/LRUIndex/`
+code path: `./testbed/LRUIndex/Server/`
 
 You can follow these steps to begin a test:
 
-+ compile: use `make` in `./testbed/LRUIndex/`
++ compile: use `make` in `./testbed/LRUIndex/Server/`
 
 + run the program:
 
@@ -90,11 +93,11 @@ You can follow these steps to begin a test:
 
 ### LRUMon
 
-code path: `./testbed/LRUMon/`
+code path: `./testbed/LRUMon/Server/`
 
 You can follow these steps to begin a test:
 
-+ compile: use `make` in `./testbed/LRUMon/`
++ compile: use `make` in `./testbed/LRUMon/Server/`
 
 + run the program:
 
@@ -113,4 +116,34 @@ You can follow these steps to begin a test:
 + waiting for finishing sending, `ctrl+C` to kill the receiver program. The results are shown in the shell.
 
 
+### LRUIndex
+
+code path: `./testbed/LRUMon/Server/`
+
+The server part of LRUIndex is based on our another database system, which needs some lib supports. You need to install these library first:
+```shell
+apt install libtbb-dev
+apt install libhiredis-dev
+```
+
+You can follow these steps to begin a test:
+
++ compile: use `make` in `./testbed/LRUMon/Server/`
+
++ run the program:
+
+  + run backend first: backend is the database for receiving dpdk query and insert packets
+
+  ```shell
+  ./backend/backend
+  ```
+
+  + run sender then: we make tests with ycsbc, you can set the thread number and the workload in the parameters
+
+  ```shell
+  # for convenience, we set our NIC in ycsbc.cc. You need change the '-a' parameter for your environment.
+  ./ycsbc -db b_plus_tree -threads 1 -P workloads/workloadc.spec
+  ```
+
++ waiting for finishing sending, `ctrl+C` to kill the backend program. The results are shown in the shell.
 

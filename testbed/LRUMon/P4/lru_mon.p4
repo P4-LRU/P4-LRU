@@ -19,10 +19,10 @@
 *************************************************************************/
 #define __TEST__
 const bit<32> FILTER_SIZE = 1<<18;	//18-bit 
-const bit<32> BUCKET_SIZE = 1<<17;	//17-bit
+const bit<32> BUCKET_SIZE = 1<<10;	//17-bit
 const bit<32> BUFFER_POOL_SIZE = 1<<11;     //
 const bit<8> PACKET_BUFFER_SIZE = 1<<7;     //128 (fp.counter) tuple records per submit packet
-typedef bit<18> filter_hash_size_t;
+typedef bit<19> filter_hash_size_t;
 typedef bit<17> bucket_hash_size_t;
 typedef bit<32> lru_fp_length_t;
 typedef bit<32> lru_counter_length_t;
@@ -246,7 +246,7 @@ control Ingress1(inout ingress_header_t hdr,
 	Hash<filter_hash_size_t>(HashAlgorithm_t.CUSTOM, crc32_1) filter_hash_1;
 	Hash<filter_hash_size_t>(HashAlgorithm_t.CRC32) filter_hash_2;
 	action filter_preprocessing_0() {
-		hdr.filter_record.index_1 =  (filter_size_t)filter_hash_1.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr});
+		hdr.filter_record.index_1 =  (filter_size_t)filter_hash_1.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr,hdr.submit_record.src_port,hdr.submit_record.dst_port,hdr.submit_record.protocol});
 		hdr.filter_record.timestamp = ig_intr_md.ingress_mac_tstamp[39:24];
 	}
 	
@@ -260,7 +260,7 @@ control Ingress1(inout ingress_header_t hdr,
 	}
 
 	action filter_preprocessing_1() {
-		hdr.filter_record.index_2 = (filter_size_t)filter_hash_2.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr});
+		hdr.filter_record.index_2 = (filter_size_t)filter_hash_2.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr,hdr.submit_record.src_port,hdr.submit_record.dst_port,hdr.submit_record.protocol});
 	}
 	
 	@stage(0)
@@ -287,7 +287,7 @@ control Ingress1(inout ingress_header_t hdr,
 		}
 	};
 	action filter_timestamp_check_00() {
-		hdr.filter_record.filter_is_replace_1 = filter_timestamp_buckets_salu_00.execute(hdr.filter_record.index_1);
+		hdr.filter_record.filter_is_replace_1 = filter_timestamp_buckets_salu_00.execute((filter_size_t)hdr.filter_record.index_1[17:0]);
 	}
 
 	@stage(1)
@@ -313,7 +313,7 @@ control Ingress1(inout ingress_header_t hdr,
 		}
 	};
 	action filter_timestamp_check_01() {
-		hdr.filter_record.filter_is_replace_1 = filter_timestamp_buckets_salu_01.execute(hdr.filter_record.index_1);
+		hdr.filter_record.filter_is_replace_1 = filter_timestamp_buckets_salu_01.execute((filter_size_t)hdr.filter_record.index_1[17:0]);
 	}
 
 	@stage(2)
@@ -339,7 +339,7 @@ control Ingress1(inout ingress_header_t hdr,
 		}
 	};
 	action filter_timestamp_check_10() {
-		hdr.filter_record.filter_is_replace_2 = filter_timestamp_buckets_salu_10.execute(hdr.filter_record.index_2);
+		hdr.filter_record.filter_is_replace_2 = filter_timestamp_buckets_salu_10.execute((filter_size_t)hdr.filter_record.index_2[17:0]);
 	}
 	
 	@stage(3)
@@ -365,7 +365,7 @@ control Ingress1(inout ingress_header_t hdr,
 		}
 	};
 	action filter_timestamp_check_11() {
-		hdr.filter_record.filter_is_replace_2 = filter_timestamp_buckets_salu_11.execute(hdr.filter_record.index_2);
+		hdr.filter_record.filter_is_replace_2 = filter_timestamp_buckets_salu_11.execute((filter_size_t)hdr.filter_record.index_2[17:0]);
 	}
 	
 	@stage(4)
@@ -394,7 +394,7 @@ control Ingress1(inout ingress_header_t hdr,
 	};
 
 	action filter_counter_update_00() {
-		meta.filter_counter_1 = filter_counter_buckets_salu_00.execute(hdr.filter_record.index_1);
+		meta.filter_counter_1 = filter_counter_buckets_salu_00.execute((filter_size_t)hdr.filter_record.index_1[17:0]);
 	}
 	
 	@stage(5)
@@ -422,7 +422,7 @@ control Ingress1(inout ingress_header_t hdr,
 	};
 
 	action filter_counter_update_01() {
-		meta.filter_counter_1 = filter_counter_buckets_salu_01.execute(hdr.filter_record.index_1);
+		meta.filter_counter_1 = filter_counter_buckets_salu_01.execute((filter_size_t)hdr.filter_record.index_1[17:0]);
 	}
 	
 	@stage(6)
@@ -450,7 +450,7 @@ control Ingress1(inout ingress_header_t hdr,
 	};
 
 	action filter_counter_update_10() {
-		meta.filter_counter_2 = filter_counter_buckets_salu_10.execute(hdr.filter_record.index_2);
+		meta.filter_counter_2 = filter_counter_buckets_salu_10.execute((filter_size_t)hdr.filter_record.index_2[17:0]);
 	}
 	
 	@stage(7)
@@ -478,7 +478,7 @@ control Ingress1(inout ingress_header_t hdr,
 	};
 
 	action filter_counter_update_11() {
-		meta.filter_counter_2 = filter_counter_buckets_salu_11.execute(hdr.filter_record.index_2);
+		meta.filter_counter_2 = filter_counter_buckets_salu_11.execute((filter_size_t)hdr.filter_record.index_2[17:0]);
 	}
 	
 	@stage(8)
@@ -1048,10 +1048,11 @@ control Egress2(inout egress_header_t hdr,
 	inout egress_intrinsic_metadata_for_output_port_t eg_oport_md)
 {
 /**************************** PREPROCESSING ********************************/
-	Hash<bucket_hash_size_t>(HashAlgorithm_t.CRC32) lru_bucket_hash;
-	Hash<lru_fp_length_t>(HashAlgorithm_t.CRC32) fp_hash;
+	CRCPolynomial<bit<32>>(coeff=0x1A833982B,reversed=false, msb=false, extended=false, init=0x00000000 , xor=0xFFFFFFFF) crc32_2;
+	Hash<bucket_size_t>(HashAlgorithm_t.CRC32) lru_bucket_hash;
+	Hash<lru_fp_length_t>(HashAlgorithm_t.CUSTOM,crc32_2) fp_hash;
 	action lru_preprocessing() {
-		hdr.lru_record.index = (bucket_size_t)lru_bucket_hash.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr});
+		hdr.lru_record.index = (bucket_size_t)lru_bucket_hash.get({hdr.submit_record.src_addr,hdr.submit_record.dst_addr,hdr.submit_record.src_port,hdr.submit_record.dst_port,hdr.submit_record.protocol});
 		hdr.lru_record.counter = hdr.submit_record.counter;
 	}
 
@@ -1087,7 +1088,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_fp_action_1() {
-		meta.key_evt_1 = insert_fp_salu_1.execute(hdr.lru_record.index);
+		meta.key_evt_1 = insert_fp_salu_1.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(1)
@@ -1109,7 +1110,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_fp_action_2() {
-		meta.key_evt_2 = insert_fp_salu_2.execute(hdr.lru_record.index);
+		meta.key_evt_2 = insert_fp_salu_2.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(3)
@@ -1131,7 +1132,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_fp_action_3() {
-		meta.key_evt_3 = insert_fp_salu_3.execute(hdr.lru_record.index);
+		meta.key_evt_3 = insert_fp_salu_3.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(5)
@@ -1144,18 +1145,18 @@ control Egress2(inout egress_header_t hdr,
 	}
 
 /**************************** LRU DFA ********************************/
-    Register<bit<8>, bit<8>>(BUCKET_SIZE) reg_dfa;
-    RegisterAction<bit<8>, bit<8>, bit<8>>(reg_dfa) action_dfa_1 = {
+    Register<bit<8>, bit<32>>(BUCKET_SIZE) reg_dfa;
+    RegisterAction<bit<8>, bit<32>, bit<8>>(reg_dfa) action_dfa_1 = {
         void apply (inout bit<8> reg_data, out bit<8> result) {
             result = reg_data;
         }
     };
 
     action table_action_dfa_1() {
-        meta.dfa_sta = action_dfa_1.execute(0);
+        meta.dfa_sta = action_dfa_1.execute((bit<32>)hdr.lru_record.index[10:0]);
     }
 
-    RegisterAction<bit<8>, bit<8>, bit<8>>(reg_dfa) action_dfa_2 = {
+    RegisterAction<bit<8>, bit<32>, bit<8>>(reg_dfa) action_dfa_2 = {
         void apply (inout bit<8> reg_data, out bit<8> result) {
             if (reg_data >= 4) {
                 reg_data = reg_data ^ 1;
@@ -1168,10 +1169,10 @@ control Egress2(inout egress_header_t hdr,
     };
 
     action table_action_dfa_2() {
-        meta.dfa_sta = action_dfa_2.execute(0);
+        meta.dfa_sta = action_dfa_2.execute((bit<32>)hdr.lru_record.index[10:0]);
     }
 
-    RegisterAction<bit<8>, bit<8>, bit<8>>(reg_dfa) action_dfa_3 = {
+    RegisterAction<bit<8>, bit<32>, bit<8>>(reg_dfa) action_dfa_3 = {
         void apply (inout bit<8> reg_data, out bit<8> result) {
             if (reg_data <= 1) {
                 reg_data = reg_data + 4;
@@ -1184,7 +1185,7 @@ control Egress2(inout egress_header_t hdr,
     };
 
     action table_action_dfa_3() {
-        meta.dfa_sta = action_dfa_3.execute(0);
+        meta.dfa_sta = action_dfa_3.execute((bit<32>)hdr.lru_record.index[10:0]);
     }
 
     @stage(7) 
@@ -1230,7 +1231,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_counter_action_1() {
-		hdr.lru_record.old_counter = insert_counter_salu_1.execute(hdr.lru_record.index);
+		hdr.lru_record.old_counter = insert_counter_salu_1.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(8)
@@ -1258,7 +1259,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_counter_action_2() {
-		hdr.lru_record.old_counter = insert_counter_salu_2.execute(hdr.lru_record.index);
+		hdr.lru_record.old_counter = insert_counter_salu_2.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(9)
@@ -1286,7 +1287,7 @@ control Egress2(inout egress_header_t hdr,
 	};
 
 	action insert_counter_action_3() {
-		hdr.lru_record.old_counter = insert_counter_salu_3.execute(hdr.lru_record.index);
+		hdr.lru_record.old_counter = insert_counter_salu_3.execute((bit<32>)hdr.lru_record.index[10:0]);
 	}
 
 	@stage(10)

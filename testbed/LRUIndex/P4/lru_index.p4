@@ -217,6 +217,8 @@ control Ingress1(inout ingress_header_t hdr,
 
     action preprocessing_2() {
         hdr.bridge.key = key_hash.get(hdr.record.key);
+        hdr.bridge.addr_1 = hdr.record.addr_1;
+        hdr.bridge.addr_2 = hdr.record.addr_2;
     }
 
     @stage(0)
@@ -456,6 +458,15 @@ control Ingress1(inout ingress_header_t hdr,
     }
 
     @stage(7) 
+    table dfa_table_1_copy {
+        actions = {
+            dfa_action_1;
+        }
+        size = 1;
+        const default_action = dfa_action_1;
+    }
+
+    @stage(7) 
     table dfa_table_2 {
         actions = {
             dfa_action_2;
@@ -485,7 +496,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_1) replace_addr_1_salu_1 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -525,7 +536,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_1) replace_addr_2_salu_1 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -566,7 +577,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_2) replace_addr_1_salu_2 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -606,7 +617,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_2) replace_addr_2_salu_2 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -647,7 +658,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_3) replace_addr_1_salu_3 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -687,7 +698,7 @@ control Ingress1(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_3) replace_addr_2_salu_3 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -743,7 +754,7 @@ control Ingress1(inout ingress_header_t hdr,
                 }
 
                 if(meta.dfa_tsm != 0) {
-                    dfa_table_1.apply();
+                    dfa_table_1_copy.apply();
                 }
 
                 if(meta.dfa_tsm == 1 && meta.dfa_sta == 4) {
@@ -839,7 +850,7 @@ control Ingress1(inout ingress_header_t hdr,
                     dfa_table_1.apply();
                 } else if (meta.dfa_tsm == 2) {
                     dfa_table_2.apply();
-                } else{
+                } else if (meta.dfa_tsm == 3) {
                     dfa_table_3.apply();
                 }
             
@@ -1126,6 +1137,15 @@ control Ingress2(inout ingress_header_t hdr,
     }
 
     @stage(7) 
+    table dfa_table_1_copy {
+        actions = {
+            dfa_action_1;
+        }
+        size = 1;
+        const default_action = dfa_action_1;
+    }
+
+    @stage(7) 
     table dfa_table_2 {
         actions = {
             dfa_action_2;
@@ -1155,7 +1175,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_1) replace_addr_1_salu_1 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -1195,7 +1215,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_1) replace_addr_2_salu_1 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -1236,7 +1256,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_2) replace_addr_1_salu_2 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -1276,7 +1296,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_2) replace_addr_2_salu_2 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -1317,7 +1337,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b32_t, b32_t, b32_t>(addr_1_3) replace_addr_1_salu_3 = {
         void apply (inout b32_t reg_data, out b32_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_1;
+            reg_data = hdr.bridge.addr_1;
         }
     };
 
@@ -1357,7 +1377,7 @@ control Ingress2(inout ingress_header_t hdr,
     RegisterAction<b16_t, b32_t, b16_t>(addr_2_3) replace_addr_2_salu_3 = {
         void apply (inout b16_t reg_data, out b16_t out_data) {
             out_data = reg_data;
-            reg_data = hdr.record.addr_2;
+            reg_data = hdr.bridge.addr_2;
         }
     };
 
@@ -1407,7 +1427,7 @@ control Ingress2(inout ingress_header_t hdr,
             }
 
             if(meta.dfa_tsm != 0) {
-                dfa_table_1.apply();
+                dfa_table_1_copy.apply();
             }
 
             if(meta.dfa_tsm == 1 && meta.dfa_sta == 4) {
@@ -1509,7 +1529,7 @@ control Ingress2(inout ingress_header_t hdr,
                 dfa_table_1.apply();
             } else if (meta.dfa_tsm == 2) {
                 dfa_table_2.apply();
-            } else{
+            } else if (meta.dfa_tsm == 3) {
                 dfa_table_3.apply();
             }
 
