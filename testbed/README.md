@@ -47,7 +47,7 @@ port-enb -/-
 port-loopback ?/- mac-near
 ```
 
-​	you can use a new shell to run the bfrt setting script(the parameters in the script should change with your environment):
+​	you can use a new shell to run the bfrt setting script(the parameters(port) in the python script should change with your environment):
 
 ```shell
 ./run_bfshell.sh -b /root/P4-LRU/testbed/LRUIndex/P4/set_lru_index.p4
