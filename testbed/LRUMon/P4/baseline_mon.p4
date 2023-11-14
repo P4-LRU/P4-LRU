@@ -1,6 +1,13 @@
 /*
 */
 
+/*
+* Ingress1: use a timestamp filter to filter some small flows
+* Ingress2: no nothing
+* Egress1: do nothing
+* Egress2: implement simple hash cache
+*/
+
 #include<core.p4>
 #if __TARGET_TOFINO__ == 2
 #include<t2na.p4>

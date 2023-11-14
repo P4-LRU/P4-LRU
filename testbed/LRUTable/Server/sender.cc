@@ -79,7 +79,7 @@ vector<packet> vp;
 
 int main(int argc, char *argv[]) {
   driver.init(argc, argv);
-  ifstream caida("/home/lab1806/CAIDA_BYTE_TSTAMP_2018/normalized_060.dat", ios::binary);
+  ifstream caida(argv[argc - 1], ios::binary);
 
   struct sigaction new_sa, old_sa;
 

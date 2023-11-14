@@ -3,6 +3,13 @@
 * do something for the query and query response packets
 */
 
+/*
+* Ingress1: hash the key to decide which registers to store the info. implement the first part cache
+* Ingress2: implement the second part cache
+* Egress1: do nothing
+* Egress2: do nothing
+*/
+
 #include<core.p4>
 #if __TARGET_TOFINO__ == 2
 #include<t2na.p4>
@@ -187,6 +194,8 @@ parser IngressParser2(
 /*************************************************************************
  ***********************  I N G R E S S  *********************************
 *************************************************************************/
+
+// hash the key to decide which registers to store the info. implement the first part cache
 control Ingress1(inout ingress_header_t hdr,
 		inout ingress_metadata_t meta,
 		in ingress_intrinsic_metadata_t ig_intr_md,
@@ -633,11 +642,16 @@ control Ingress1(inout ingress_header_t hdr,
     }
 /********************** INGRESS LOGIC *****************************/	
 	apply {
+        //use a hash number(stored in hdr.bridge.flag) to decide which registers to be used
+        //
         if(hdr.udp.isValid()){ 
             set_port_table_0.apply();
+            //hash 
             preprocessing_table_1.apply();
             preprocessing_table_2.apply();  
-            preprocessing_table_3.apply();  
+            preprocessing_table_3.apply(); 
+            
+            //set hdr.bridge.flag
             if(meta.rand <= 682) {
                 hdr.bridge.flag = 1;
             }
@@ -658,7 +672,7 @@ control Ingress1(inout ingress_header_t hdr,
             }
 
 
-            if(hdr.record.type == 0x0527) {     //replace
+            if(hdr.record.type == 0x0527) {     //read
                 if(hdr.bridge.flag == 1) {
                     read_key_table_1.apply();
                 }
@@ -710,6 +724,7 @@ control Ingress1(inout ingress_header_t hdr,
             }
         }
         else {
+            // send other packets directly
             set_port_table_1.apply();
         }
 
@@ -717,6 +732,7 @@ control Ingress1(inout ingress_header_t hdr,
 }
 
 
+//implement the second part cache
 control Ingress2(inout ingress_header_t hdr,
 		inout ingress_metadata_t meta,
 		in ingress_intrinsic_metadata_t ig_intr_md,

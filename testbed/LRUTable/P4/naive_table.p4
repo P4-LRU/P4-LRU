@@ -1,7 +1,10 @@
+
+
 /*
-* lru for database cache
-* do something for the query and query response packets
+* Ingress: send the packets back 
+* Egress: do nothing
 */
+
 
 #include<core.p4>
 #if __TARGET_TOFINO__ == 2

@@ -1,10 +1,11 @@
 /*
-* 2022-5-24
-* four stage filters and four stage hash tables
-* eight exact match tables in filter stages, for higher utilization of SRAM
-* two-layer sketch filter
-* add ring buffer, put hash table to egress of pipe2
-* 5-24, update buffer index
+*/
+
+/*
+* Ingress1: use a timestamp filter to filter some small flows
+* Ingress2: no nothing
+* Egress1: do nothing
+* Egress2: implement LRU cache
 */
 
 #include<core.p4>

@@ -3,6 +3,13 @@
 * do something for the query and query response packets
 */
 
+/*
+* Ingress1: hash the key to decide which registers to store the info. implement the first part LRU cache
+* Ingress2: implement the second part LRU cache
+* Egress1: do nothing
+* Egress2: do nothing
+*/
+
 #include<core.p4>
 #if __TARGET_TOFINO__ == 2
 #include<t2na.p4>

@@ -50,12 +50,70 @@ port-loopback ?/- mac-near
 ​	you can use a new shell to run the bfrt setting script(the parameters(port) in the python script should change with your environment):
 
 ```shell
-./run_bfshell.sh -b /root/P4-LRU/testbed/LRUIndex/P4/set_lru_index.p4
+./run_bfshell.sh -b /root/P4-LRU/testbed/LRUIndex/P4/set_lru_index.py
 ```
 
 At this point, you know how to compile, run and configurate a P4 program.
 
 
+
+Tips: If you want to run the experience in your environment, you need to change the port in the python script. For example, in `./testbed/LRUIndex/set_baseline_index.py`, your switch ports are possibly different to ours:
+
+```python
+# our topo: client -- port 128 -- switch -- port 144 -- server
+# use port 44 and 36 as the recirculate ports
+
+table = bfrt.baseline_index.pipe1.Ingress1.set_port_table_0
+table.clear()
+
+# table that send packets to recirculate ports
+table.add_with_set_port_action(128, 44)
+table.add_with_set_port_action(144, 36)
+
+table = bfrt.baseline_index.pipe1.Ingress1.set_port_table_1
+table.clear()
+# table to send packets directly from server to client, vice versa
+table.add_with_set_port_action(128, 144)
+table.add_with_set_port_action(144, 128)
+
+# ...
+
+# table send packets from recirculate ports to server/client
+table = bfrt.baseline_index.pipe2.Ingress2.set_port_table
+table.clear()
+table.add_with_set_port_action(44, 144)
+table.add_with_set_port_action(36, 128)
+```
+
+if you use the topo: ` client -- port 128 -- switch -- port 132 -- server ` , port 32 and 36 as your recirculate ports, you need to change to :
+
+```python
+table = bfrt.baseline_index.pipe1.Ingress1.set_port_table_0
+table.clear()
+
+# table that send packets to recirculate ports
+table.add_with_set_port_action(128, 32)
+table.add_with_set_port_action(132, 36)
+
+table = bfrt.baseline_index.pipe1.Ingress1.set_port_table_1
+table.clear()
+# table to send packets directly from server to client, vice versa
+table.add_with_set_port_action(128, 132)
+table.add_with_set_port_action(132, 128)
+
+
+# table send packets from recirculate ports to server/client
+table = bfrt.baseline_index.pipe2.Ingress2.set_port_table
+table.clear()
+table.add_with_set_port_action(32, 132)
+table.add_with_set_port_action(36, 128)
+```
+
+`./testbed/LRUIndex/set_lru_index.py` in the similar way.
+
+`LRUMon` set in the similar way. Meanwhile, LRUMon has a parameter called threshold, which controls the filter threshold entering the LRU system. You can set the parameter in the script, too.
+
+`LRUTable` doesn't have the recirculate ports, so you just need to set the port linked with the client and the server.
 
 ## Build server code
 
@@ -147,3 +205,8 @@ You can follow these steps to begin a test:
 
 + waiting for finishing sending, `ctrl+C` to kill the backend program. The results are shown in the shell.
 
+
+
+### An LRUMon structure for understanding the code
+
+![](./LRUMon_structure.png)
