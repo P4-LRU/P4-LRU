@@ -4,6 +4,32 @@ This directory is for P4LRU CPU simulation. You can run this code to reproduce t
 
 
 
+## Directory Structure
+
+Here show the directory structure and some files info.
+
+```
+│
+└─src
+    │  app1-ideal.cpp : Figure 15, ideal LRU simulation for LRUTable
+    │  app1.cpp: Figure 15, P4LRU simulation for LRUTable
+    │  app2-ideal.cpp : Figure 16, ideal LRU simulation for LRUIndex
+    │  app2.cpp: Figure 16, P4LRU simulation for LRUIndex
+    │  app4.cpp: Figure 12, P4LRU、Coco、Elastic simulation
+    │  app5.cpp: Figure 13, P4LRU、Coco、Elastic simulation
+    │  app6.cpp: Figure 14, P4LRU、Coco、Elastic simulation
+    │  dataset.cpp: parse data file 
+    │  experiment.cpp: define the details of experiments 1-6
+    │  farm.cpp: a 3rd-party library
+    │  lru.cpp: Figure 17, P4LRU simulation
+    │  main.cpp: some simple code for tests
+    │  util.cpp
+    |
+    └─include
+```
+
+
+
 ## Prerequisite
 
 A linux server with `clang`(at least version 10) environment.

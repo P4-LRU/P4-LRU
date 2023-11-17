@@ -6,6 +6,33 @@ Each system code contains two parts: server code and P4 code. Compiling the serv
 
 
 
+## Directory Structure
+
+The directory structure is as follows(only show some useful files): 
+
+```
+
+├─driver: driver for our dpdk code
+│
+├─LRUIndex
+│  ├─P4
+│  │      set_baseline_index.py: should modify the port number 
+│  │      set_lru_index.py: should modify the port number 
+│  └─Server
+├─LRUMon
+│  ├─P4
+│  │      set_baseline_mon.py: should modify the port number 
+│  │      set_lru_mon.py: should modify the port number 
+│  └─Server
+└─LRUTable
+    ├─P4
+    │      set_baseline_table.py: should modify the port number 
+    │      set_lru_table.py: should modify the port number 
+    └─Server
+```
+
+
+
 ## Minimum environment requests
 
 + Two servers with NIC supported DPDK and DPDK version == 20.11(we cannot ensure DPDK code can be compiled in other versions)
