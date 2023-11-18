@@ -36,7 +36,7 @@ The directory structure is as follows(only show some useful files):
 ## Minimum environment requests
 
 + Two servers with NIC supported DPDK and DPDK version == 20.11(we cannot ensure DPDK code can be compiled in other versions)
-+ a Tofino switch with SDE version == 9.2 
++ a  Tofino switch with SDE version == 9.2 
 Notice: We **highly** recommend you to use SDE 9.2. We tested our P4 programs in SDE9.2, 9.5 and 9.7, but *LRUIndex* makes some logic mistakes and leads function errors under SDE 9.5 and 9.7. We guess it is because of the internal compilor error of Tofino SDE.
 
 These two servers link with the Tofino switch. Packets can be transmitted through the switch
@@ -46,6 +46,8 @@ These two servers link with the Tofino switch. Packets can be transmitted throug
 ## Build P4 code
 
 The P4 code of the three systems is in `./testbed/SYSTEM_NAME/P4/*.p4`. Each `*.p4` code corresponds the result line in the paper.
+
+Notice: our configs are based on a double-pipe switch. If you use four-pipe switch, it also works but may need some small changes.
 
 You can follow these steps to build and run the P4 program:
 
@@ -84,7 +86,7 @@ At this point, you know how to compile, run and configurate a P4 program.
 
 
 
-Tips: If you want to run the experience in your environment, you need to change the port in the python script. For example, in `./testbed/LRUIndex/set_baseline_index.py`, your switch ports are possibly different to ours:
+Tips: If you want to run the experiment in your environment, you need to change the port in the python script. For example, in `./testbed/LRUIndex/set_baseline_index.py`, your switch ports are possibly different to ours:
 
 ```python
 # our topo: client -- port 128 -- switch -- port 144 -- server
