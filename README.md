@@ -18,6 +18,6 @@ We build a group of datasets for testbed experiments. We mix different amounts o
 
 We upload our datasets used in the experiments to PKU cloud disk:
 
-https://disk.pku.edu.cn:443/link/84C42A1E82DEF2E35473C8EC088EF12C expiration date: 2024-09-30 23:59.
+https://disk.pku.edu.cn/link/AA7AB9EE0A054A4C2EA98C15A7B7774FD1
 
 If you have any questions about these datasets. Feel free to contact us by the email.
